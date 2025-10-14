@@ -2,6 +2,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from google import genai
+from functions.config import *
 
 
 def show_usage():
@@ -10,29 +11,27 @@ def show_usage():
     pass
 
 def main(*args, **kwargs):
-    request = ""
+    messages = ""
 
     if len(args[0]) < 2: 
         show_usage()
         return 1
-
-    # print(args[0][1])
     
-    request = str(args[0][1])
-
+    messages = str(args[0][1])
 
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001', 
-        contents=request
+        model=model_name,
+        contents=messages,
+        config=genai.types.GenerateContentConfig(system_instruction=system_prompt),
     )
 
     print(response.text)
     
     if "--verbose" in args[0] or "-V" in args[0]:
-        print("User prompt: ", request)
+        print("User prompt: ", messages)
         print("Prompt tokens: ", response.usage_metadata.prompt_token_count)
         print("Response tokens: ",  response.usage_metadata.candidates_token_count)
 

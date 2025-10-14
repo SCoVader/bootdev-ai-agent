@@ -1,6 +1,7 @@
 from functions.get_files_info import *
 from functions.get_file_content import *
 from functions.write_file import *
+from functions.run_python_file import *
 
 def test_get_file_info():
     print(get_files_info("calculator", "."), "\n\n")
@@ -20,11 +21,19 @@ def test_write_file():
     print(write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet"), "\n\n")
     print(write_file("calculator", "/tmp/temp.txt", "this should not be allowed"), "\n\n")
 
+def test_run_python():
+    print(run_python_file("calculator", "main.py"))
+    print(run_python_file("calculator", "main.py", ["3 + 5"]))
+    print(run_python_file("calculator", "tests.py"))
+    print(run_python_file("calculator", "../main.py"))
+    print(run_python_file("calculator", "nonexistent.py"))
+    print(run_python_file("calculator", "lorem.txt"))
+
 def main():
     # test_get_file_info()
     # test_get_file_content()
-    test_write_file()
-
+    # test_write_file()
+    test_run_python()
 
 
 if __name__ == "__main__":
