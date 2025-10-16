@@ -1,6 +1,8 @@
 import os
 import subprocess
 import sys
+from google import genai
+
 
 def run_python_file(working_directory, file_path, args=[]):
     try:
@@ -19,8 +21,6 @@ def run_python_file(working_directory, file_path, args=[]):
     args_combined.extend(args)
 
     try:
-        # print(f"DEBUG: {args_combined}")
-        # print(f"DEBUG: {os.path.abspath(working_directory)}")
     
         compleated_proc = subprocess.run(args=args_combined, timeout=30, capture_output=True, cwd=os.path.abspath(working_directory), text=True)
 
@@ -38,3 +38,20 @@ def run_python_file(working_directory, file_path, args=[]):
         print(f"Error: executing Python file: {e}")
         
 
+schema_run_python_file = genai.types.FunctionDeclaration(
+    name="run_python_file",
+    description="Runs given python file, constrained to the working directory.",
+    parameters=genai.types.Schema(
+        type=genai.types.Type.OBJECT,
+        properties={
+            "file_path": genai.types.Schema(
+                type=genai.types.Type.STRING,
+                description="The path to files, relative to the working directory. If not provided, returns an error message.",
+            ),
+            "args": genai.types.Schema(
+                type=genai.types.Type.STRING,
+                description="The list of arguments which will be passed to executes file",
+            )
+        },
+    ),
+)
