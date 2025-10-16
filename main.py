@@ -3,7 +3,15 @@ import sys
 from dotenv import load_dotenv
 from google import genai
 from functions.config import *
+from functions.get_files_info import get_files_info
+from functions.get_files_info import schema_get_files_info
 
+
+available_functions = types.Tool(
+    function_declarations=[
+        schema_get_files_info,
+    ]
+)
 
 def show_usage():
     print("Boot.dev ai agent")
@@ -25,7 +33,7 @@ def main(*args, **kwargs):
     response = client.models.generate_content(
         model=model_name,
         contents=messages,
-        config=genai.types.GenerateContentConfig(system_instruction=system_prompt),
+        config=genai.types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt),
     )
 
     print(response.text)
