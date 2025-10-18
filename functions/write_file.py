@@ -1,37 +1,43 @@
 import os
-from google import genai
+from google.genai import types
 
 
 def write_file(working_directory, file_path, content):
+    abs_working_dir = os.path.abspath(working_directory)
+    abs_file_path = os.path.abspath(os.path.join(working_directory, file_path))
+    if not abs_file_path.startswith(abs_working_dir):
+        return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
+    if not os.path.exists(abs_file_path):
+        try:
+            os.makedirs(os.path.dirname(abs_file_path), exist_ok=True)
+        except Exception as e:
+            return f"Error: creating directory: {e}"
+    if os.path.exists(abs_file_path) and os.path.isdir(abs_file_path):
+        return f'Error: "{file_path}" is a directory, not a file'
     try:
-        full_path = os.path.abspath(os.path.join(os.path.abspath(working_directory), file_path))
-    
-        if working_directory not in full_path:
-            return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
-        # if not os.path.exists(full_path):
-        with open(full_path, "w") as f:
+        with open(abs_file_path, "w") as f:
             f.write(content)
-
+        return (
+            f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+        )
     except Exception as e:
-        print(f"Error: {e}")
+        return f"Error: writing to file: {e}"
 
-    return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
-
-
-schema_write_file = genai.types.FunctionDeclaration(
+schema_write_file = types.FunctionDeclaration(
     name="write_file",
     description="Creates file in specified path, if a file already exists then rewrites it, constrained to the working directory.",
-    parameters=genai.types.Schema(
-        type=genai.types.Type.OBJECT,
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
         properties={
-            "directory": genai.types.Schema(
-                type=genai.types.Type.STRING,
+            "file_path": types.Schema(
+                type=types.Type.STRING,
                 description="The path where file will be created or rewriten, relative to the working directory. If not provided, lists files in the working directory itself.",
             ),
-            "content": genai.types.Schema(
-                type=genai.types.Type.STRING,
+            "content": types.Schema(
+                type=types.Type.STRING,
                 description="Content that will be placed in specified file. Created or existing",
             ),
         },
+        required=["file_path", "content"],
     ),
 )

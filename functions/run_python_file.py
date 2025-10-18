@@ -1,57 +1,63 @@
 import os
 import subprocess
-import sys
-from google import genai
+from google.genai import types
 
 
-def run_python_file(working_directory, file_path, args=[]):
+def run_python_file(working_directory, file_path, args=None):
+    abs_working_dir = os.path.abspath(working_directory)
+    abs_file_path = os.path.abspath(os.path.join(working_directory, file_path))
+    if not abs_file_path.startswith(abs_working_dir):
+        return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
+    if not os.path.exists(abs_file_path):
+        return f'Error: File "{file_path}" not found.'
+    if not file_path.endswith(".py"):
+        return f'Error: "{file_path}" is not a Python file.'
     try:
-        full_path = os.path.abspath(os.path.join(os.path.abspath(working_directory), file_path))
-    
-        if working_directory not in full_path:
-            return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
-        if not os.path.isfile(full_path):
-            return f'Error: File "{file_path}" not found.'
-        if not str(full_path).endswith(".py"):
-            return f'Error: "{file_path}" is not a Python file.'
-    except Exception as e:
-        print(f"Error:{e}")
-        
-    args_combined=["python", full_path ]
-    args_combined.extend(args)
+        commands = ["python", abs_file_path]
+        if args:
+            commands.extend(args)
+        result = subprocess.run(
+            commands,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=abs_working_dir,
+        )
+        output = []
+        if result.stdout:
+            output.append(f"STDOUT:\n{result.stdout}")
+        if result.stderr:
+            output.append(f"STDERR:\n{result.stderr}")
 
-    try:
-    
-        compleated_proc = subprocess.run(args=args_combined, timeout=30, capture_output=True, cwd=os.path.abspath(working_directory), text=True)
+        if result.returncode != 0:
+            output.append(f"Process exited with code {result.returncode}")
 
-        proc_results="" 
-        if not compleated_proc.stdout:
-            proc_results += "No output produced.\n"
-        else:
-            proc_results += str(f"STDOUT:{compleated_proc.stdout}\n")
-        if compleated_proc.stderr:
-            proc_results += str(f"STDERR:{compleated_proc.stderr}\n")
-        if compleated_proc.returncode != 0:
-            proc_results += f"Process exited with code {compleated_proc.returncode}\n"
-        return proc_results
+        return "\n".join(output) if output else "No output produced."
     except Exception as e:
-        print(f"Error: executing Python file: {e}")
+        return f"Error: executing Python file: {e}"
+
         
 
-schema_run_python_file = genai.types.FunctionDeclaration(
+schema_run_python_file = types.FunctionDeclaration(
     name="run_python_file",
-    description="Runs given python file, constrained to the working directory.",
-    parameters=genai.types.Schema(
-        type=genai.types.Type.OBJECT,
+    description="Executes a Python file within the working directory and returns the output from the interpreter.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
         properties={
-            "file_path": genai.types.Schema(
-                type=genai.types.Type.STRING,
-                description="The path to files, relative to the working directory. If not provided, returns an error message.",
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path to the Python file to execute, relative to the working directory.",
             ),
-            "args": genai.types.Schema(
-                type=genai.types.Type.STRING,
-                description="The list of arguments which will be passed to executes file",
-            )
+            "args": types.Schema(
+                type=types.Type.ARRAY,
+                items=types.Schema(
+                    type=types.Type.STRING,
+                    description="Optional arguments to pass to the Python file.",
+                ),
+                description="Optional arguments to pass to the Python file.",
+            ),
         },
+        required=["file_path"],
     ),
 )
+

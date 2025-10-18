@@ -1,6 +1,7 @@
-
+WORKING_DIR = "./calculator"
 
 MAX_CHARS = 10000
+MAX_ITERS = 20
 model_name = "gemini-2.0-flash-001"
 system_prompt = """
 You are a helpful AI coding agent.

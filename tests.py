@@ -12,9 +12,9 @@ def test_get_file_info():
 def test_get_file_content():
     # print(get_file_content("calculator", "lorem.txt"), "\n\n")
     print(get_file_content("calculator", "main.py"), "\n\n")
-    print(get_file_content("calculator", "pkg/calculator.py"), "\n\n")
-    print(get_file_content("calculator", "/bin/cat"), "\n\n")
-    print(get_file_content("calculator", "pkg/does_not_exist.py"), "\n\n")
+    # print(get_file_content("calculator", "pkg/calculator.py"), "\n\n")
+    # print(get_file_content("calculator", "/bin/cat"), "\n\n")
+    # print(get_file_content("calculator", "pkg/does_not_exist.py"), "\n\n")
 
 def test_write_file():
     print(write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum"), "\n\n")
@@ -24,16 +24,16 @@ def test_write_file():
 def test_run_python():
     print(run_python_file("calculator", "main.py"))
     print(run_python_file("calculator", "main.py", ["3 + 5"]))
-    print(run_python_file("calculator", "tests.py"))
     print(run_python_file("calculator", "../main.py"))
     print(run_python_file("calculator", "nonexistent.py"))
     print(run_python_file("calculator", "lorem.txt"))
+    print(run_python_file("calculator", "tests.py"))
 
 def main():
     # test_get_file_info()
-    # test_get_file_content()
+    test_get_file_content()
     # test_write_file()
-    test_run_python()
+    # test_run_python()
 
 
 if __name__ == "__main__":
